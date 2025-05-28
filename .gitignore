@@ -1,0 +1,10 @@
+.history
+/node_modules
+.DS_Store
+.env
+.editorconfig
+.vscode
+.doc
+history
+/public
+/src/node_modules
