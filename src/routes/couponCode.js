@@ -127,7 +127,7 @@ router.post('/check-coupon', asyncHandler(async (req, res) => {
 
         // Check if the coupon is active
         if (coupon.status !== 'active') {
-            return res.json({ success: false, message: "Coupon is inactive." });
+            return res.json({ success: false, message: "Coupon is in active." });
         }
 
        // Check if the purchase amount is greater than the minimum purchase amount specified in the coupon
