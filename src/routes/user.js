@@ -2,6 +2,7 @@ const express = require('express');
 const asyncHandler = require('express-async-handler');
 const router = express.Router();
 const User = require('../model/user');
+const { OAuth2Client } = require('google-auth-library');
 
 // Get all users
 router.get('/', asyncHandler(async (req, res) => {
@@ -36,6 +37,44 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+
+// login with google
+
+const GOOGLE_CLIENT_ID = process.env.YOUR_GOOGLE_CLIENT_ID; // Replace with your actual Google Client ID
+const client = new OAuth2Client(GOOGLE_CLIENT_ID);
+
+router.post('/google', asyncHandler(async (req, res) => {
+  const { idToken } = req.body;
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, sub: googleId, picture } = payload;
+
+    // Tìm user theo email (Google)
+    let user = await User.findOne({ email });
+
+    // Nếu chưa có, tạo mới
+    if (!user) {
+      user = new User({
+        name: name || email,
+        email,
+        googleId,
+        picture,
+        password: null,
+      });
+      await user.save();
+    }
+
+    res.status(200).json({ success: true, message: "Google login successful.", data: user });
+  } catch (error) {
+    res.status(401).json({ success: false, message: 'Invalid Google token', error: error.message });
+  }
+}));
 
 
 // Get a user by ID
