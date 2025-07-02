@@ -12,4 +12,5 @@ module.exports = {
   uploadCategory: multer({ storage: createCloudStorage('categories'), limits: { fileSize: 5*1024*1024 } }),
   uploadProduct : multer({ storage: createCloudStorage('products'),   limits: { fileSize: 5*1024*1024 } }),
   uploadPosters : multer({ storage: createCloudStorage('posters'),    limits: { fileSize: 5*1024*1024 } }),
+  uploadAvatar  : multer({ storage: createCloudStorage('avatars'),    limits: { fileSize: 2*1024*1024 } }),
 };

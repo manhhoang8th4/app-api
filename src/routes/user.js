@@ -4,7 +4,8 @@ const router = express.Router();
 const User = require('../model/user');
 const { OAuth2Client } = require('google-auth-library');
 const axios = require('axios');
-
+const multer = require('multer');
+const { uploadAvatar } = require('../uploadFile');
 // Get all users
 router.get('/', asyncHandler(async (req, res) => {
     try {
@@ -226,4 +227,33 @@ router.delete('/:id', asyncHandler(async (req, res) => {
     }
 }));
 
+//upload avatar
+router.post(
+  '/upload-avatar/:userId',
+  uploadAvatar.single('avatar'),          
+  asyncHandler(async (req, res) => {
+    const { userId } = req.params;
+
+    // Không có file => báo lỗi
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded.' });
+    }
+
+    // URL Cloudinary
+    const avatarUrl = req.file.path;      
+
+    // Cập nhật vào MongoDB
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { picture: avatarUrl },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    res.json({ success: true, message: 'Avatar uploaded successfully.', data: user });
+  })
+);
 module.exports = router;
