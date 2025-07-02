@@ -4,6 +4,7 @@
   const mongoose = require("mongoose");
   const asyncHandler = require("express-async-handler");
   const dotenv = require("dotenv");
+
   dotenv.config();
 
   const app = express();
@@ -19,21 +20,13 @@
   app.use("/image/poster", express.static("public/posters"));
 
   // MongoDB connection
-  const URL = process.env.MONGO_URL || "mongodb://localhost:27017/app-mobile";
+  const URL = process.env.MONGO_URL;
   mongoose.connect(URL);
   const db = mongoose.connection;
   db.on("error", (error) => console.error(error));
   db.once("open", () => console.log("Connected to Database"));
 
-  // // User Schema & Model (from đoạn 2)
-  // const { Schema, model } = mongoose;
-  // const userSchema = new Schema({
-  //   name: String,
-  //   age: Number,
-  //   email: String,
-  // });
-  // // const User = model('User', userSchema);
-
+  
   app.use("/categories", require("./routes/category"));
   app.use("/subCategories", require("./routes/subCategory"));
   app.use("/brands", require("./routes/brand"));

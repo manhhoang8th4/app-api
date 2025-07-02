@@ -3,6 +3,7 @@ const asyncHandler = require('express-async-handler');
 const router = express.Router();
 const User = require('../model/user');
 const { OAuth2Client } = require('google-auth-library');
+const axios = require('axios');
 
 // Get all users
 router.get('/', asyncHandler(async (req, res) => {
@@ -51,7 +52,6 @@ router.post('/google', asyncHandler(async (req, res) => {
       idToken,
       audience: GOOGLE_CLIENT_ID,
     });
-
     const payload = ticket.getPayload();
     const { email, name, sub: googleId, picture } = payload;
 
@@ -73,6 +73,86 @@ router.post('/google', asyncHandler(async (req, res) => {
     res.status(200).json({ success: true, message: "Google login successful.", data: user });
   } catch (error) {
     res.status(401).json({ success: false, message: 'Invalid Google token', error: error.message });
+  }
+}));
+
+// login with facebook
+const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID;
+const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
+
+router.post('/facebook', asyncHandler(async (req, res) => {
+  const { access_token } = req.body;
+
+  if (!access_token) {
+    return res.status(400).json({
+      success: false,
+      message: "Access token is required",
+    });
+  }
+
+  try {
+    // Xác minh access_token có hợp lệ với app_id không
+    const debugTokenResponse = await axios.get(
+      `https://graph.facebook.com/debug_token`,
+      {
+        params: {
+          input_token: access_token,
+          access_token: `${FACEBOOK_APP_ID}|${FACEBOOK_APP_SECRET}`,
+        },
+      }
+    );
+
+    const isValid = debugTokenResponse.data?.data?.is_valid;
+    if (!isValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid Facebook access token.",
+      });
+    }
+
+    // Lấy thông tin user
+    const fbResponse = await axios.get(`https://graph.facebook.com/me`, {
+      params: {
+        fields: 'id,name,email,picture',
+        access_token,
+      },
+    });
+
+    const fbUser = fbResponse.data;
+    const facebookId = fbUser.id;
+    const name = fbUser.name;
+    const email = fbUser.email || `${facebookId}@facebook.com`;
+    const picture = fbUser.picture?.data?.url || '';
+
+    // Kiểm tra hoặc tạo mới user
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = new User({
+        name,
+        email,
+        facebookId,
+        picture,
+        password: null,
+      });
+
+      await user.save();
+    }
+
+    // Trả kết quả
+    return res.status(200).json({
+      success: true,
+      message: "Facebook login successful.",
+      data: user,
+    });
+
+  } catch (error) {
+    console.error("Facebook login error:", error?.response?.data || error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Facebook login failed.",
+      error: error?.response?.data || error.message,
+    });
   }
 }));
 
