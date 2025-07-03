@@ -256,4 +256,24 @@ router.post(
     res.json({ success: true, message: 'Avatar uploaded successfully.', data: user });
   })
 );
+
+router.put('/:id/player-id', async (req, res) => {
+  const { id } = req.params;
+  const { playerId } = req.body;
+
+  try {
+    // $set cho rõ ràng & trả document mới
+    const user = await User.findByIdAndUpdate(
+      id,
+      { $set: { playerId } },
+      { new: true, runValidators: true },
+    );
+
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    res.json({ success: true, data: user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;

@@ -34,6 +34,10 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  playerId: {
+    type: String,
+    default: null, // Dùng cho OneSignal
+  },
 });
 
 // Cập nhật updatedAt mỗi khi gọi save()
