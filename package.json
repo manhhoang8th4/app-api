@@ -9,6 +9,7 @@
     "body-parser": "^2.2.0",
     "cloudinary": "^1.30.0",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
     "express-async-handler": "^1.2.0",
@@ -18,8 +19,14 @@
     "mongoose": "^8.15.1",
     "multer": "^2.0.1",
     "multer-storage-cloudinary": "^4.0.0",
+    "nodemailer": "^7.0.5",
     "onesignal-node": "^3.4.0",
     "streamifier": "^0.1.1",
     "stripe": "^18.1.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.52.0",
+    "prettier": "^3.1.0",
+    "prettier-eslint": "^16.1.2"
   }
 }

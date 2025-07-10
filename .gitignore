@@ -8,3 +8,4 @@
 history
 /public
 /src/node_modules
+/yarn.lock
