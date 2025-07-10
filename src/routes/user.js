@@ -78,7 +78,7 @@ router.post(
       // Nếu chưa có, tạo mới
       if (!user) {
         user = new User({
-          name: email,
+          name,
           email,
           googleId,
           picture,
@@ -294,16 +294,16 @@ router.delete(
 router.post(
   "/forgot-password",
   asyncHandler(async (req, res) => {
-    const { name } = req.body;
+    const { email } = req.body;
 
-    if (!name) {
+    if (!email) {
       return res.status(400).json({
         success: false,
         message: "Email is required.",
       });
     }
 
-    const user = await User.findOne({ name });
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({
@@ -330,7 +330,7 @@ router.post(
 
     const mailOptions = {
       from: `"MyApp Support" <${process.env.EMAIL_USER}>`,
-      to: user.name,
+      to: user.email,
       subject: "🔐 Your New Password",
       html: `
         <p>Hello <b>${user.name}</b>,</p>
