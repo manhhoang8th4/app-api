@@ -3,22 +3,28 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: false, // vì người dùng Google có thể không có name ban đầu
+    required: false, // Cho phép rỗng với Google/Facebook
   },
   password: {
     type: String,
-    required: false, // người dùng Google không có password
+    required: false, // Rỗng với người dùng mạng xã hội
   },
   email: {
     type: String,
     unique: true,
-    sparse: true, // tránh lỗi trùng nếu không có email (chỉ cho Google dùng)
+    sparse: true, // Tránh lỗi unique nếu không có email
   },
   googleId: {
     type: String,
+    default: null,
+  },
+  facebookId: {
+    type: String,
+    default: null,
   },
   picture: {
-    type: String, // ảnh đại diện
+    type: String,
+    default: null, // URL avatar
   },
   createdAt: {
     type: Date,
@@ -27,12 +33,22 @@ const userSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now,
-  }
+  },
+  playerId: {
+    type: String,
+    default: null, // Dùng cho OneSignal
+  },
 });
 
-// Middleware để cập nhật updatedAt khi save
+// Cập nhật updatedAt mỗi khi gọi save()
 userSchema.pre('save', function (next) {
   this.updatedAt = Date.now();
+  next();
+});
+
+// Nếu bạn sử dụng updateOne hoặc findOneAndUpdate, bạn cần hook khác
+userSchema.pre('findOneAndUpdate', function (next) {
+  this.set({ updatedAt: Date.now() });
   next();
 });
 

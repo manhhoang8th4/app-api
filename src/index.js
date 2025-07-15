@@ -4,6 +4,7 @@
   const mongoose = require("mongoose");
   const asyncHandler = require("express-async-handler");
   const dotenv = require("dotenv");
+
   dotenv.config();
 
   const app = express();
@@ -24,7 +25,6 @@
   const db = mongoose.connection;
   db.on("error", (error) => console.error(error));
   db.once("open", () => console.log("Connected to Database"));
-
 
   app.use("/categories", require("./routes/category"));
   app.use("/subCategories", require("./routes/subCategory"));

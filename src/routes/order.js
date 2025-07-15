@@ -2,6 +2,8 @@ const express = require('express');
 const asyncHandler = require('express-async-handler');
 const router = express.Router();
 const Order = require('../model/order');
+const User = require('../model/user');
+const axios = require('axios');
 
 // Get all orders
 router.get('/', asyncHandler(async (req, res) => {
@@ -67,6 +69,7 @@ router.put('/:id', asyncHandler(async (req, res) => {
     try {
         const orderID = req.params.id;
         const { orderStatus, trackingUrl } = req.body;
+
         if (!orderStatus) {
             return res.status(400).json({ success: false, message: "Order Status required." });
         }
@@ -75,10 +78,32 @@ router.put('/:id', asyncHandler(async (req, res) => {
             orderID,
             { orderStatus, trackingUrl },
             { new: true }
-        );
+        ).populate('userID');
 
         if (!updatedOrder) {
             return res.status(404).json({ success: false, message: "Order not found." });
+        }
+
+        // Gửi thông báo nếu có playerId
+        const user = updatedOrder.userID;
+        if (user && user.playerId) {
+            const notificationData = {
+                app_id: process.env.ONE_SIGNAL_APP_ID,
+                include_player_ids: [user.playerId],
+                headings: { en: "Order Status Updated" },
+                contents: { en: `Your order #${updatedOrder._id} status changed to: ${orderStatus}` },
+                data: {
+                    orderId: updatedOrder._id,
+                    type: 'order_update'
+                }
+            };
+
+            axios.post('https://api.onesignal.com/notifications', notificationData, {
+                headers: {
+                  Authorization: `Basic ${process.env.ONE_SIGNAL_REST_API_KEY}`,
+                  'Content-Type': 'application/json',
+                },
+              });
         }
 
         res.json({ success: true, message: "Order updated successfully.", data: null });
