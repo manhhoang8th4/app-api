@@ -26,6 +26,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null, // URL avatar
   },
+  playerId: {
+    type: String,
+    default: null, // Dùng cho OneSignal
+  },
+  isBlocked: {
+    type: Boolean,
+    default: false, // 👈 Mặc định không bị khóa
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -33,10 +41,6 @@ const userSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now,
-  },
-  playerId: {
-    type: String,
-    default: null, // Dùng cho OneSignal
   },
 });
 

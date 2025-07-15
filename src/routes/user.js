@@ -30,25 +30,38 @@ router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Check if the user exists
+    // Tìm người dùng theo email
     const user = await User.findOne({ email });
 
-    if (!email) {
+    // Không tìm thấy người dùng
+    if (!user) {
       return res
         .status(401)
-        .json({ success: false, message: "Invalid name or password." });
+        .json({ success: false, message: "Invalid email or password." });
     }
-    // Check if the password is correct
+
+    // Kiểm tra nếu bị khoá tài khoản
+    if (user.isBlocked) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been blocked.",
+      });
+    }
+
+    // Sai mật khẩu
     if (user.password !== password) {
       return res
         .status(401)
-        .json({ success: false, message: "Invalid name or password." });
+        .json({ success: false, message: "Invalid email or password." });
     }
 
-    // Authentication successful
-    res
-      .status(200)
-      .json({ success: true, message: "Login successful.", data: user });
+    // ✅ Thành công
+    res.status(200).json({
+      success: true,
+      message: "Login successful.",
+      data: user,
+    });
+
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -409,5 +422,27 @@ router.put("/:id/player-id", async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
+// Khóa hoặc mở khóa tài khoản người dùng
+// PUT /users/:id/block
+router.put('/:id/block', asyncHandler(async (req, res) => {
+  const { isBlocked } = req.body;
+  const userId = req.params.id;
+
+  const user = await User.findByIdAndUpdate(
+    userId,
+    { isBlocked },
+    { new: true }
+  );
+
+  if (!user)
+    return res.status(404).json({ success: false, message: 'User not found.' });
+
+  res.json({
+    success: true,
+    message: `User has been ${isBlocked ? 'blocked' : 'unblocked'} successfully.`,
+    data: user,
+  });
+}));
+
 
 module.exports = router;
